@@ -155,10 +155,10 @@ def exp_with_arg(data_path):
     parser = argparse.ArgumentParser()
     parser.add_argument("-algo", type=str)
     parser.add_argument("-n", type=int)
-    parser.add_argument("-m", default=1, type=int)
+    parser.add_argument("-md", default=1, type=int)
     parser.add_argument("-p", action="store_true")
     args = parser.parse_args()
-    document_list, gold_list = read_data(data_path, present=args.p, mode=args.m)
+    document_list, gold_list = read_data(data_path, present=args.p, mode=args.md)
     keyword_list = run_keyword_extract(args.algo, document_list, gold_list, args.n)
     precision, recall, f1 = eval(gold_list, keyword_list)
     print('\n当前是{}算法，n取{}的结果'.format(args.algo, args.n))
@@ -189,7 +189,7 @@ def write_result(keyword_list, algo, n, test_result):
 
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
-    # data_path = 'data/kp20k_testing.json'
-    data_path = 'data/sem_eval_test.json'
+    data_path = 'data/kp20k_testing.json'
+    # data_path = 'data/sem_eval_test.json'
     # exp_main(data_path)
     exp_with_arg(data_path)
