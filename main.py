@@ -1,3 +1,5 @@
+import logging
+
 import pke
 from nltk.corpus import stopwords
 from tqdm import tqdm
@@ -5,6 +7,8 @@ import string
 
 from data_preprocess import read_data
 from evaluate import eval
+from pke import load_document_frequency_file
+
 
 def run_text_rank(extractor, n):
     """
@@ -22,7 +26,7 @@ def run_text_rank(extractor, n):
     keyphrases = extractor.get_n_best(n=n)
     return keyphrases
 
-def run_tf_idf(extractor, n):
+def run_tf_idf(extractor, n, df):
     """
     运行tf-idf算法抽取关键短语
     Args:
@@ -32,7 +36,7 @@ def run_tf_idf(extractor, n):
         抽取的关键短语
     """
     extractor.candidate_selection(n=3, stoplist=list(string.punctuation))
-    extractor.candidate_weighting()
+    extractor.candidate_weighting(df=df)
     keyphrases = extractor.get_n_best(n=n)
     return keyphrases
 
@@ -86,6 +90,7 @@ def run_keyword_extract(algo, document_list, gold_list, n=5):
         抽取的关键短语list
     """
     keyword_list = []
+    df = load_document_frequency_file("pke/models/df-semeval2010.tsv.gz", delimiter='\t')
     for doc_text in tqdm(document_list):
         if algo=='YAKE':
             extractor = pke.unsupervised.YAKE()
@@ -112,14 +117,14 @@ def run_keyword_extract(algo, document_list, gold_list, n=5):
             extractor.load_document(input=doc_text,
                                     language='en',
                                     normalization=None)
-            keywords = run_tf_idf(extractor, n)
+            keywords = run_tf_idf(extractor, n, df)
 
         keyword_list.append(keywords)
         precision, recall, f1 = eval(gold_list[:len(keyword_list)], keyword_list)
-        test_result = {'precision': precision,
-                       'recall': recall,
-                       'f1': f1}
-        print(test_result)
+        # test_result = {'precision': precision,
+        #                'recall': recall,
+        #                'f1': f1}
+        # print(test_result)
     return keyword_list
 
 def exp_main(data_path):
@@ -127,7 +132,7 @@ def exp_main(data_path):
     自动化实验主程序
     """
     # document_list, gold_list = read_data('a.json')
-    document_list, gold_list = read_data(data_path)
+    document_list, gold_list = read_data(data_path, present=True, mode=1)
     for algo in ['YAKE', 'SingleRank', 'TextRank', 'TfIdf']:
         for n in [5, 10]:
             keyword_list = run_keyword_extract(algo, document_list, gold_list, n)
@@ -150,8 +155,10 @@ def exp_with_arg(data_path):
     parser = argparse.ArgumentParser()
     parser.add_argument("-algo", type=str)
     parser.add_argument("-n", type=int)
+    parser.add_argument("-m", default=1, type=int)
+    parser.add_argument("-p", action="store_true")
     args = parser.parse_args()
-    document_list, gold_list = read_data(data_path, present=True)
+    document_list, gold_list = read_data(data_path, present=args.p, mode=args.m)
     keyword_list = run_keyword_extract(args.algo, document_list, gold_list, args.n)
     precision, recall, f1 = eval(gold_list, keyword_list)
     print('\n当前是{}算法，n取{}的结果'.format(args.algo, args.n))
@@ -181,6 +188,7 @@ def write_result(keyword_list, algo, n, test_result):
         print(test_result, file=f)
 
 if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.INFO)
     # data_path = 'data/kp20k_testing.json'
     data_path = 'data/sem_eval_test.json'
     # exp_main(data_path)
