@@ -131,21 +131,21 @@ def exp_main(data_path):
     """
     自动化实验主程序
     """
-    # document_list, gold_list = read_data('a.json')
+    n = 10
     document_list, gold_list = read_data(data_path, present=True, mode=1)
     for algo in ['YAKE', 'SingleRank', 'TextRank', 'TfIdf']:
-        for n in [5, 10]:
-            keyword_list = run_keyword_extract(algo, document_list, gold_list, n)
-            precision, recall, f1 = eval(gold_list, keyword_list)
-            print('\n当前是{}算法，n取{}的结果'.format(algo, n))
-            print('precision:{}'.format(precision))
-            print('recall:{}'.format(recall))
-            print('f1:{}'.format(f1))
-            print('**********************')
-            test_result = {'precision': precision,
-                           'recall': recall,
-                           'f1': f1}
-            write_result(keyword_list, algo, n, test_result)
+        # for n in [5, 10]:
+        keyword_list = run_keyword_extract(algo, document_list, gold_list, n)
+        precision, recall, f1 = eval(gold_list, keyword_list)
+        print('\n当前是{}算法，n取{}的结果'.format(algo, n))
+        print('precision:{}'.format(precision))
+        print('recall:{}'.format(recall))
+        print('f1:{}'.format(f1))
+        print('**********************')
+        test_result = {'precision': precision,
+                       'recall': recall,
+                       'f1': f1}
+        write_result(keyword_list, algo, n, test_result)
 
 def exp_with_arg(data_path):
     """
