@@ -1,4 +1,18 @@
+import logging
+
+
 def eval(gold_list, pred_list, n=10):
+    '''
+    计算评价指标， 使用micro平均
+    Args:
+        gold_list: 真实关键短语
+        pred_list: 预测关键短语
+
+    Returns:
+        micro_precision: 准确率
+        micro_recall: 召回率
+        micro_f1: f1值
+    '''
     num_predict = 0
     num_gold = 0
     num_match = 0
@@ -19,15 +33,31 @@ def eval(gold_list, pred_list, n=10):
     # micro
     micro_precision = 1. * num_match / num_predict
     micro_recall = 1. * num_match / num_gold
-    micro_f1 = 2 * micro_precision * micro_recall / (micro_precision + micro_recall)
+    micro_f1 = 2 * micro_precision * micro_recall / (micro_precision + micro_recall) \
+        if (micro_precision + micro_recall) > 0 else 0.0
     # macro
     macro_precision = sum(macro_precisions) / len(macro_precisions)
     macro_recall = sum(macro_recalls) / len(macro_recalls)
-    macro_f1 = 2 * macro_precision * macro_recall / (macro_precision + macro_recall)
+    macro_f1 = 2 * macro_precision * macro_recall / (macro_precision + macro_recall) \
+        if (macro_precision + macro_recall) > 0 else 0.0
+    logging.info({'macro_precision': macro_precision,
+                  'macro_recall': macro_recall,
+                  'macro_f1': macro_f1})
     return micro_precision, micro_recall, micro_f1
 
 
 def eval_v2(gold_list, pred_list):
+    '''
+    过时的评测，按词共现算准确率
+    Args:
+        gold_list: 真实关键短语
+        pred_list: 预测关键短语
+
+    Returns:
+        precision: 准确率
+        recall: 召回率
+        f1: f1值
+    '''
     num_predict = 0
     num_gold = 0
     num_match = 0
@@ -44,19 +74,25 @@ def eval_v2(gold_list, pred_list):
     precision = 1. * num_match / num_predict
     recall = 1. * num_match / num_gold
     macro_r = sum(macro_recalls) / len(macro_recalls)
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) >0 else 0.0
-    return precision, recall, f1, macro_r
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+    return precision, recall, f1
 
 
 def read_pred(path):
+    '''
+    读取存储的预测数据
+    Args:
+        path: 路径
+
+    Returns:
+        pred_list: 预测的关键短语list
+    '''
     import ast
     pred_list = []
     with open(path, encoding='utf-8') as f:
-        count = 0
         for line in f:
-            if count == 20000:
+            if line.strip() == '===========================':
                 break
-            count += 1
             example = ast.literal_eval(line.strip())
             pred_list.append(example)
     return pred_list
