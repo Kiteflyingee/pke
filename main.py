@@ -132,7 +132,7 @@ def exp_main(data_path):
     自动化实验主程序
     """
     n = 10
-    document_list, gold_list = read_data(data_path, present=True, mode=1)
+    document_list, gold_list = read_data(data_path, present=False, mode=1)
     for algo in ['YAKE', 'SingleRank', 'TextRank', 'TfIdf']:
         # for n in [5, 10]:
         keyword_list = run_keyword_extract(algo, document_list, gold_list, n)
