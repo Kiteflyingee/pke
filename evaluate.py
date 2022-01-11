@@ -100,13 +100,15 @@ def read_pred(path):
 
 if __name__ == '__main__':
     from data_preprocess import read_data
+    logging.getLogger().setLevel(logging.INFO)
 
-    doc_list, g_list = read_data('data/kp20k_testing.json', True)
+    doc_list, g_list = read_data('data/kp20k_testing.json', False)
     # files = ['YAKE_5.txt', 'YAKE_10.txt', 'SingleRank_5.txt', 'SingleRank_10.txt', 'Tf_idf_10.txt']
-    files = ['Tf_idf_10.txt']
+    files = ['TextRank_10.txt','SingleRank_10.txt','YAKE_10.txt','TfIdf_10.txt']
+    n = 5
     for file in files:
         p_list = read_pred('result/' + file)
-        precision, recall, f1 = eval(g_list, p_list, n=10)
+        precision, recall, f1 = eval(g_list, p_list, n=n)
         # precision, recall, f1 = eval_v2(g_list, p_list)
         print('当前是{}'.format(file))
         print({
